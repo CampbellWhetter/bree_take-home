@@ -59,6 +59,41 @@ python tests/test_scoring_engine.py
 
 Scenarios 7 (duplicate submission) and 8 (webhook replay) are covered by the application/orchestration layer (Step 2+).
 
+## Step 2: Application State Machine
+
+The lifecycle is enforced by an explicit transition table; every transition is validated before persistence.
+
+### States
+
+- `submitted` → `processing` → `approved` | `denied` | `flagged_for_review`
+- `approved` / `partially_approved` → `disbursement_queued` → `disbursed` | `disbursement_failed`
+- `disbursement_failed` → `disbursement_queued` (retry)
+- `flagged_for_review` → `approved` | `denied` | `partially_approved` (manual review)
+
+Terminal states: `denied`, `disbursed`.
+
+### Usage
+
+All state changes go through `validate_transition(current, target)`. Invalid transitions raise `InvalidStateTransitionError` with `current_state`, `requested_state`, and `allowed_next_states` (for structured API responses).
+
+```python
+from src.state_machine import ApplicationStatus, validate_transition, get_allowed_transitions
+from src.errors import InvalidStateTransitionError
+
+validate_transition(ApplicationStatus.SUBMITTED, ApplicationStatus.PROCESSING)  # ok
+validate_transition(ApplicationStatus.DENIED, ApplicationStatus.PROCESSING)    # raises InvalidStateTransitionError
+```
+
+### Migration: `partially_approved`
+
+The table includes `partially_approved`: an admin can approve a reduced loan amount from `flagged_for_review`. Transition table lives in `src/state_machine/transitions.py`; adding the state and edges required no change to existing applications.
+
+### Tests
+
+```bash
+python -m pytest tests/test_state_machine.py -v
+```
+
 ---
 
-*State machine, webhook flow, and admin endpoints to be added in subsequent steps.*
+*Webhook flow and admin endpoints to be added in subsequent steps.*
