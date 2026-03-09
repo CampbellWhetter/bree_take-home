@@ -1,5 +1,6 @@
 """SQLite persistence: applications and webhook events (idempotency + audit)."""
 
+import os
 import sqlite3
 import uuid
 from contextlib import contextmanager
@@ -14,6 +15,10 @@ def _project_root() -> Path:
 
 
 def get_db_path() -> Path:
+    """Use LOANAPP_DB_PATH for tests (isolated DB)."""
+    override = os.environ.get("LOANAPP_DB_PATH")
+    if override:
+        return Path(override)
     return _project_root() / "data" / "loanapp.db"
 
 
@@ -68,6 +73,17 @@ def init_db(conn: sqlite3.Connection) -> None:
         CREATE INDEX IF NOT EXISTS idx_applications_disbursement_queued ON applications(disbursement_queued_at)
             WHERE status = 'disbursement_queued';
     """)
+    _migrate_admin_columns(conn)
+
+
+def _migrate_admin_columns(conn: sqlite3.Connection) -> None:
+    """Add approved_loan_amount and review_note if missing (existing DBs)."""
+    row = conn.execute("PRAGMA table_info(applications)").fetchall()
+    cols = {r[1] for r in row}
+    if "approved_loan_amount" not in cols:
+        conn.execute("ALTER TABLE applications ADD COLUMN approved_loan_amount REAL")
+    if "review_note" not in cols:
+        conn.execute("ALTER TABLE applications ADD COLUMN review_note TEXT")
 
 
 # --- Applications ---
@@ -161,8 +177,32 @@ def update_application_status(
         )
 
 
+def update_application_review(
+    conn: sqlite3.Connection,
+    application_id: str,
+    new_status: str,
+    *,
+    approved_loan_amount: float | None = None,
+    review_note: str | None = None,
+) -> None:
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    conn.execute(
+        """UPDATE applications SET status = ?, approved_loan_amount = ?, review_note = ?, updated_at = ? WHERE id = ?""",
+        (new_status, approved_loan_amount, review_note, now, application_id),
+    )
+
+
 def list_applications_by_status(conn: sqlite3.Connection, status: str) -> list[dict]:
     rows = conn.execute("SELECT * FROM applications WHERE status = ? ORDER BY created_at DESC", (status,)).fetchall()
+    return [_row_to_application(r) for r in rows]
+
+
+def list_applications(conn: sqlite3.Connection, status: str | None = None) -> list[dict]:
+    """List applications, optionally filtered by status."""
+    if status is not None:
+        return list_applications_by_status(conn, status)
+    rows = conn.execute("SELECT * FROM applications ORDER BY created_at DESC").fetchall()
     return [_row_to_application(r) for r in rows]
 
 

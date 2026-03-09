@@ -18,6 +18,13 @@ def main():
     else:
         data = json.load(sys.stdin)
 
+    # Support test_data.json format: array of { "input": {...} } or array of application objects
+    if isinstance(data, list):
+        if not data:
+            sys.exit("JSON array is empty")
+        first = data[0]
+        data = first.get("input", first) if isinstance(first, dict) else first
+
     result = score_application(data)
     print(f"Score: {result.total_score:.1f}")
     print(f"Decision: {result.decision.value}")

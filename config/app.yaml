@@ -7,3 +7,8 @@ disbursement:
 duplicate_prevention:
   # Same email + loan_amount within this many minutes → reject as duplicate
   window_minutes: 5
+
+# Admin endpoints: Basic auth (set LOANAPP_ADMIN_PASSWORD in env to override)
+admin:
+  username: admin
+  password: admin

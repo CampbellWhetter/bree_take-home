@@ -14,7 +14,7 @@ from .db import (
     list_disbursement_queued_stale,
     init_db,
 )
-from .errors import InvalidStateTransitionError
+from .errors import ApplicationNotFoundError, InvalidDisbursementStatusError, InvalidStateTransitionError
 from .state_machine import ApplicationStatus, validate_transition
 
 
@@ -30,7 +30,7 @@ def handle_disbursement_webhook(
     Returns dict with keys: processed (bool), application_id, new_status (if processed).
     """
     if status not in ("success", "failed"):
-        raise ValueError(f"Invalid status: {status}")
+        raise InvalidDisbursementStatusError(status)
 
     with get_connection() as conn:
         init_db(conn)
@@ -45,7 +45,7 @@ def handle_disbursement_webhook(
 
         app = get_application(conn, application_id)
         if not app:
-            raise ValueError(f"Application not found: {application_id}")
+            raise ApplicationNotFoundError(application_id)
 
         current = ApplicationStatus(app["status"])
         target = ApplicationStatus.DISBURSED if status == "success" else ApplicationStatus.DISBURSEMENT_FAILED

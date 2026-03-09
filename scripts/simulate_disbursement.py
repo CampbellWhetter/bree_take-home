@@ -5,7 +5,10 @@ Usage:
   python scripts/simulate_disbursement.py <base_url> <application_id> success
   python scripts/simulate_disbursement.py <base_url> <application_id> failure
   python scripts/simulate_disbursement.py <base_url> <application_id> replay [transaction_id]
-For replay, if transaction_id is omitted we send a success first then replay the same payload.
+
+Replay: sends the same transaction_id twice (first request processes, second is idempotent).
+  The application must be in disbursement_queued. Do not run "success" first—use a fresh
+  application for replay, or you will get 409 (invalid transition disbursed -> disbursed).
 """
 
 import json
@@ -43,6 +46,8 @@ def main():
         }
         send(url, payload)
     elif mode == "replay":
+        if not replay_txn:
+            print("Note: Application must be in disbursement_queued (do not run 'success' first).", file=sys.stderr)
         if replay_txn:
             payload = {
                 "application_id": application_id,
