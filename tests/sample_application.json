@@ -1,0 +1,13 @@
+{
+  "applicant_name": "Jane Doe",
+  "email": "jane@example.com",
+  "loan_amount": 1500,
+  "stated_monthly_income": 5000,
+  "employment_status": "employed",
+  "documented_monthly_income": 4800,
+  "bank_ending_balance": 3200,
+  "bank_has_overdrafts": false,
+  "bank_has_consistent_deposits": true,
+  "monthly_withdrawals": 1200,
+  "monthly_deposits": 4800
+}

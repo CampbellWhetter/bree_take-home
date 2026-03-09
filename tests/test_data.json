@@ -1,0 +1,106 @@
+[
+  {
+    "scenario": 1,
+    "expected_decision": "auto_approve",
+    "input": {
+      "applicant_name": "Jane Doe",
+      "email": "jane.doe@example.com",
+      "loan_amount": 1500,
+      "stated_monthly_income": 5000,
+      "employment_status": "employed",
+      "documented_monthly_income": 4800,
+      "bank_ending_balance": 3200,
+      "bank_has_overdrafts": false,
+      "bank_has_consistent_deposits": true,
+      "monthly_withdrawals": 1200,
+      "monthly_deposits": 4800
+    }
+  },
+  {
+    "scenario": 2,
+    "expected_decision": "auto_deny",
+    "input": {
+      "applicant_name": "Bob Smith",
+      "email": "bob.smith@example.com",
+      "loan_amount": 2000,
+      "stated_monthly_income": 1400,
+      "employment_status": "self-employed",
+      "documented_monthly_income": 1350,
+      "bank_ending_balance": 150,
+      "bank_has_overdrafts": true,
+      "bank_has_consistent_deposits": false,
+      "monthly_withdrawals": 1100,
+      "monthly_deposits": 1350
+    }
+  },
+  {
+    "scenario": 3,
+    "expected_decision": "flag_for_review",
+    "note": "Reuses Bob Smith's financial data with a smaller loan amount",
+    "input": {
+      "applicant_name": "Bob Smith",
+      "email": "bob.smith@example.com",
+      "loan_amount": 300,
+      "stated_monthly_income": 1400,
+      "employment_status": "self-employed",
+      "documented_monthly_income": 1350,
+      "bank_ending_balance": 150,
+      "bank_has_overdrafts": true,
+      "bank_has_consistent_deposits": false,
+      "monthly_withdrawals": 1100,
+      "monthly_deposits": 1350
+    }
+  },
+  {
+    "scenario": 4,
+    "expected_decision": "flag_for_review",
+    "note": "Reuses Jane Doe's financial data with a larger loan amount",
+    "input": {
+      "applicant_name": "Jane Doe",
+      "email": "jane.doe@example.com",
+      "loan_amount": 4500,
+      "stated_monthly_income": 5000,
+      "employment_status": "employed",
+      "documented_monthly_income": 4800,
+      "bank_ending_balance": 3200,
+      "bank_has_overdrafts": false,
+      "bank_has_consistent_deposits": true,
+      "monthly_withdrawals": 1200,
+      "monthly_deposits": 4800
+    }
+  },
+  {
+    "scenario": 5,
+    "expected_decision": "flag_for_review",
+    "input": {
+      "applicant_name": "Carol Tester",
+      "email": "carol.tester@example.com",
+      "loan_amount": 1000,
+      "stated_monthly_income": 8000,
+      "employment_status": "employed",
+      "documented_monthly_income": null,
+      "bank_ending_balance": null,
+      "bank_has_overdrafts": null,
+      "bank_has_consistent_deposits": null,
+      "monthly_withdrawals": null,
+      "monthly_deposits": null
+    }
+  },
+  {
+    "scenario": 6,
+    "expected_decision": "auto_deny",
+    "input": {
+      "applicant_name": "Dave Liar",
+      "email": "dave.liar@example.com",
+      "loan_amount": 2000,
+      "stated_monthly_income": 10000,
+      "employment_status": "employed",
+      "documented_monthly_income": 1400,
+      "bank_ending_balance": 150,
+      "bank_has_overdrafts": true,
+      "bank_has_consistent_deposits": false,
+      "monthly_withdrawals": 1100,
+      "monthly_deposits": 1400
+    }
+  }
+]

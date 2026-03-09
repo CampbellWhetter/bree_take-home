@@ -1,0 +1,31 @@
+# Scoring Engine Configuration
+# Weights and thresholds must live here, not in code.
+
+scoring:
+  factors:
+    income_verification:
+      weight: 0.30
+      # Income verification tolerance: documented must be within ±tolerance of stated
+      # (e.g. 0.10 = 10% in either direction). See README for interpretation.
+      income_tolerance: 0.10
+    income_level:
+      weight: 0.25
+      # Monthly income must be at least this multiple of loan amount (e.g. 3 = 3x)
+      income_to_loan_multiple: 3
+    account_stability:
+      weight: 0.20
+    employment_status:
+      weight: 0.15
+      # Scores for each status (employed > self-employed > unemployed)
+      scores:
+        employed: 100
+        self_employed: 50
+        unemployed: 0
+    debt_to_income:
+      weight: 0.10
+      # DTI = withdrawals / deposits; lower ratio = higher score (capped at 1.0)
+
+decision_thresholds:
+  auto_approve_min: 75   # score >= this → auto-approve
+  manual_review_min: 50  # score in [50, 75) → flag for manual review
+  # score < 50 → auto-deny
