@@ -23,6 +23,7 @@ from src.errors import InvalidStateTransitionError
         (ApplicationStatus.DISBURSEMENT_QUEUED, ApplicationStatus.DISBURSED),
         (ApplicationStatus.DISBURSEMENT_QUEUED, ApplicationStatus.DISBURSEMENT_FAILED),
         (ApplicationStatus.DISBURSEMENT_FAILED, ApplicationStatus.DISBURSEMENT_QUEUED),
+        (ApplicationStatus.DISBURSEMENT_QUEUED, ApplicationStatus.FLAGGED_FOR_REVIEW),  # timeout escalation
         (ApplicationStatus.FLAGGED_FOR_REVIEW, ApplicationStatus.APPROVED),
         (ApplicationStatus.FLAGGED_FOR_REVIEW, ApplicationStatus.DENIED),
         (ApplicationStatus.FLAGGED_FOR_REVIEW, ApplicationStatus.PARTIALLY_APPROVED),

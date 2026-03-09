@@ -94,6 +94,47 @@ The table includes `partially_approved`: an admin can approve a reduced loan amo
 python -m pytest tests/test_state_machine.py -v
 ```
 
+## Step 3: Webhook Disbursement Flow
+
+After approval, applications move to `disbursement_queued`. The only way to reach `disbursed` or `disbursement_failed` is via **POST /webhook/disbursement**.
+
+### API
+
+- **POST /applications** — Submit application (JSON body). Duplicate check: same email + loan amount within 5 minutes → 409 with `original_application_id`. On success: score and transition to approved/denied/flagged; if approved, transition to `disbursement_queued`.
+- **POST /webhook/disbursement** — Body: `application_id`, `status` (`success` | `failed`), `transaction_id`, `timestamp`. Success → `disbursed`; failure → `disbursement_failed`. **Idempotent by `transaction_id`**: same `transaction_id` again → 200, no state change, `already_processed: true`.
+- **GET /applications/:id** — Full application detail.
+- **POST /internal/check-disbursement-timeouts** — Finds apps in `disbursement_queued` past the configurable timeout and moves them to `flagged_for_review`.
+
+### Config
+
+- **config/app.yaml** — `disbursement.timeout_seconds` (default 24h), `duplicate_prevention.window_minutes` (5).
+
+### Run the server
+
+```bash
+pip install -r requirements.txt
+python -m uvicorn src.app:app --host 0.0.0.0 --port 8000
+```
+
+### Webhook simulator
+
+Included script to demo success, failure, and replay:
+
+```bash
+# Success (application must be in disbursement_queued)
+python scripts/simulate_disbursement.py http://127.0.0.1:8000 <application_id> success
+
+# Failure
+python scripts/simulate_disbursement.py http://127.0.0.1:8000 <application_id> failure
+
+# Replay: send same transaction_id twice (first request processes, second is idempotent)
+python scripts/simulate_disbursement.py http://127.0.0.1:8000 <application_id> replay
+```
+
+### Timeout
+
+If no webhook is received within `disbursement.timeout_seconds`, call **POST /internal/check-disbursement-timeouts** (e.g. from cron); it transitions stale `disbursement_queued` applications to `flagged_for_review`. The state machine allows `disbursement_queued` → `flagged_for_review` for this.
+
 ---
 
-*Webhook flow and admin endpoints to be added in subsequent steps.*
+*Admin endpoints (list/filter, review, partial approve) to be added in Step 4.*

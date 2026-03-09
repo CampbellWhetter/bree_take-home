@@ -1,0 +1,9 @@
+# Application and webhook config
+
+disbursement:
+  # No webhook received within this many seconds → move to flagged_for_review
+  timeout_seconds: 86400   # 24 hours
+
+duplicate_prevention:
+  # Same email + loan_amount within this many minutes → reject as duplicate
+  window_minutes: 5

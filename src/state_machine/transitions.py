@@ -23,6 +23,7 @@ TRANSITIONS: dict[ApplicationStatus, set[ApplicationStatus]] = {
     ApplicationStatus.DISBURSEMENT_QUEUED: {
         ApplicationStatus.DISBURSED,
         ApplicationStatus.DISBURSEMENT_FAILED,
+        ApplicationStatus.FLAGGED_FOR_REVIEW,  # timeout: no webhook received
     },
     ApplicationStatus.DISBURSED: set(),  # terminal
     ApplicationStatus.DISBURSEMENT_FAILED: {ApplicationStatus.DISBURSEMENT_QUEUED},
